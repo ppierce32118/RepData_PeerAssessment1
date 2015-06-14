@@ -1,15 +1,11 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
 Unzip and load the activity.csv file.
-```{r loading, echo=TRUE}
+
+```r
 unzip(zipfile="./activity.zip")
 
 activityData <- read.csv('activity.csv', 
@@ -18,7 +14,8 @@ activityData <- read.csv('activity.csv',
 ```
 
 Create date data type and dataset without NA's.
-```{r preprocess, echo=TRUE}
+
+```r
 activityData$date <- as.Date(activityData$date)
 activityDateLessNA=na.omit(activityData)
 
@@ -30,7 +27,8 @@ library(ggplot2)
 ## What is mean total number of steps taken per day?
 
 This is a histogram of the total number of steps taken each day.
-```{r totaldailysteps, echo=TRUE}
+
+```r
 #total number of steps each day
 dailySteps <-
     aggregate(formula = steps~date, data = activityData,
@@ -40,8 +38,11 @@ hist(dailySteps$steps, col = "green",
      main='Total # of steps per day')
 ```
 
+![](PA1_template_files/figure-html/totaldailysteps-1.png) 
+
 This calculates the mean and median total number of steps taken per day.
-```{r averagedailysteps, echo=TRUE}
+
+```r
 #mean
 meanDailySteps <- mean(dailySteps$steps)
 
@@ -51,13 +52,14 @@ medianDailySteps <- median(dailySteps$steps)
 #sum
 sumDailySteps <- sum(dailySteps$steps)
 ```
-The mean total number of steps taken per day is `r format(meanDailySteps, scientific = FALSE)`
-The median total number of steps taken per day is `r format(medianDailySteps, scientific = FALSE)`
+The mean total number of steps taken per day is 10766.19
+The median total number of steps taken per day is 10765
 
 ## What is the average daily activity pattern?
 
 This is a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-```{r averagedaily, echo=TRUE}
+
+```r
 averageDailyActivity=tapply(activityDateLessNA$steps,
                             activityDateLessNA$interval,
                             mean)
@@ -70,20 +72,33 @@ plot(names(averageDailyActivity),
      main='Time series plot of 5-min intervals')
 ```
 
-The 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps is `r (names(averageDailyActivity)[which.max(averageDailyActivity)])`
+![](PA1_template_files/figure-html/averagedaily-1.png) 
+
+The 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps is 835
 
 ## Imputing missing values
 
-```{r totalmissing, echo=TRUE}
+
+```r
 # Total step observation - observations wth NS'a removed
 totalnas <- dim(activityData)[1] - dim(activityDateLessNA)[1]
 ```
 
-The total number of missing values in the dataset is `r totalnas`
+The total number of missing values in the dataset is 2304
 
 Fill in all of the missing values in the dataset. 
-```{r imputemissingdata, echo=TRUE}
+
+```r
 library(mice)
+```
+
+```
+## Loading required package: Rcpp
+## Loading required package: lattice
+## mice 2.22 2014-06-10
+```
+
+```r
 steps <- activityData$steps
 intervals <- activityData$interval
 combined <- data.frame(steps,intervals)
@@ -91,12 +106,14 @@ imputedData <- mice(combined, print = FALSE, method = "norm.predict")
 ```
 
 This is a new dataset that is equal to the original dataset but with the missing data filled in.
-```{r createnewdataset, echo=TRUE}
+
+```r
 activityDataAdjusted <- cbind((complete(imputedData)),
                               date=activityData$date)
 ```
 This is a histogram of the total number of steps taken each day and calculate and report the mean and median total number of steps taken per day.
-```{r createhistogram, echo=TRUE}
+
+```r
 #total number of steps each day
 adjustedDailySteps <-
     aggregate(formula = steps~date, data = activityDataAdjusted,
@@ -105,7 +122,11 @@ adjustedDailySteps <-
 hist(adjustedDailySteps$steps, col = "green",
      xlab = 'Steps per day',
      main='Total # of steps per day')
+```
 
+![](PA1_template_files/figure-html/createhistogram-1.png) 
+
+```r
 #mean
 adjustedMeanDailySteps <- mean(adjustedDailySteps$steps)
 
@@ -114,22 +135,22 @@ adjustedMedianDailySteps <- median(adjustedDailySteps$steps)
 
 #sum
 adjustedSumDailySteps <- sum(adjustedDailySteps$steps)
-
 ```
 
-The original mean total number of steps taken per day is `r format(meanDailySteps, scientific = FALSE)`
-The imputed mean total number of steps taken per day is `r format(adjustedMeanDailySteps, scientific = FALSE)`
+The original mean total number of steps taken per day is 10766.19
+The imputed mean total number of steps taken per day is 10766.18
 
-The original median total number of steps taken per day is `r format(medianDailySteps, scientific = FALSE)`
-The imputed median total number of steps taken per day is `r format(adjustedMedianDailySteps, scientific = FALSE)`
+The original median total number of steps taken per day is 10765
+The imputed median total number of steps taken per day is 10766.1
 
-The original total number of steps taken is `r format(sumDailySteps, scientific = FALSE)`
-The imputed total number of steps taken is `r format(adjustedSumDailySteps, scientific = FALSE)`
+The original total number of steps taken is 570608
+The imputed total number of steps taken is 656736.8
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 This is a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
-```{r creatdatetype, echo=TRUE}
+
+```r
 activityDataAdjusted$dayType <- sapply(weekdays(activityDataAdjusted$date), switch, 
                                 "Saturday"  = "Weekend", 
                                 "Sunday"    = "Weekend", 
@@ -152,11 +173,11 @@ colnames(weekendInterval) <- c("intervals", "steps")
 
 weekdayInterval <- aggregate(weekdays$steps, by=list(weekdays$interval), FUN=mean)
 colnames(weekdayInterval) <- c("intervals", "steps")
-
 ```
 
 To create a panel plot with ggplot2, I am using a function from webpage http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
-```{r multipanel, echo=TRUE}
+
+```r
 # Using ggplot2 multi-panel solution
 # start from webpage 
 # http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
@@ -210,12 +231,12 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 # end from webpage
 # http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
 #
-
 ```
 
 Here is a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
-```{r weekdaysweekends, echo=TRUE}
+
+```r
 p1 <- ggplot(weekendInterval) + geom_line(aes(x=intervals, y=steps)) +
     scale_x_continuous(breaks=seq(from=min(weekendInterval$intervals), 
                                   to=max(weekendInterval$intervals), by=500)) + 
@@ -234,8 +255,9 @@ p2 <- ggplot(weekdayInterval) + geom_line(aes(x=intervals, y=steps)) +
          title = "Weekday",col="")         
 
 multiplot(p1, p2, cols=1)
-
 ```
+
+![](PA1_template_files/figure-html/weekdaysweekends-1.png) 
 
 
 
