@@ -51,6 +51,7 @@ medianDailySteps <- median(dailySteps$steps)
 #sum
 sumDailySteps <- sum(dailySteps$steps)
 ```
+### The mean and median number of steps taken each day
 The mean total number of steps taken per day is `r format(meanDailySteps, scientific = FALSE)`
 The median total number of steps taken per day is `r format(medianDailySteps, scientific = FALSE)`
 
@@ -70,6 +71,7 @@ plot(names(averageDailyActivity),
      main='Time series plot of 5-min intervals')
 ```
 
+### The 5-minute interval that, on average, contains the maximum number of steps
 The 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps is `r (names(averageDailyActivity)[which.max(averageDailyActivity)])`
 
 ## Imputing missing values
@@ -81,7 +83,7 @@ totalnas <- dim(activityData)[1] - dim(activityDateLessNA)[1]
 
 The total number of missing values in the dataset is `r totalnas`
 
-Fill in all of the missing values in the dataset. 
+Fill in all of the missing values in the dataset. Using the "mice" package to impute the missing steps. The algorithm imputes an incomplete column by generating 'plausible' synthetic values given other columns in the data. Each incomplete column must act as a target column, and has its own specific set of predictors. (from mice documentation)
 ```{r imputemissingdata, echo=TRUE}
 library(mice)
 steps <- activityData$steps
@@ -95,7 +97,7 @@ This is a new dataset that is equal to the original dataset but with the missing
 activityDataAdjusted <- cbind((complete(imputedData)),
                               date=activityData$date)
 ```
-This is a histogram of the total number of steps taken each day and calculate and report the mean and median total number of steps taken per day.
+This is a histogram of the total number of steps taken each day and calculate and report the mean and median total number of steps taken per day after missing values were imputed.
 ```{r createhistogram, echo=TRUE}
 #total number of steps each day
 adjustedDailySteps <-
